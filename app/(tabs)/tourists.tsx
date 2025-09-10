@@ -37,7 +37,7 @@ export default function TouristsScreen() {
   const tourists: Tourist[] = [
     {
       id: 'UID-001',
-      name: 'John Smith',
+      name: 'Chut marika',
       passportNumber: 'A1234567',
       registrationAuthority: 'Delhi Airport',
       registrationTimestamp: '2024-01-15 10:30:00',
@@ -89,8 +89,8 @@ export default function TouristsScreen() {
 
   const filteredTourists = tourists.filter(tourist => {
     const matchesSearch = tourist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tourist.passportNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tourist.id.toLowerCase().includes(searchQuery.toLowerCase());
+      tourist.passportNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tourist.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterStatus === 'All' || tourist.currentStatus === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -110,7 +110,7 @@ export default function TouristsScreen() {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    
+
     // Here you would call your backend API
     Alert.alert('Success', 'Tourist registered successfully!');
     setShowRegistrationModal(false);
@@ -123,8 +123,8 @@ export default function TouristsScreen() {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
+        {
+          text: 'Logout',
           style: 'destructive',
           onPress: async () => {
             await logout();
@@ -165,7 +165,7 @@ export default function TouristsScreen() {
             <IconSymbol name="power" size={20} color="#ff4444" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.registerButton, { backgroundColor: colors.tint }]}
           onPress={() => setShowRegistrationModal(true)}
         >
@@ -234,7 +234,7 @@ export default function TouristsScreen() {
               <TextInput
                 style={styles.input}
                 value={newTourist.name}
-                onChangeText={(text) => setNewTourist({...newTourist, name: text})}
+                onChangeText={(text) => setNewTourist({ ...newTourist, name: text })}
                 placeholder="Enter full name"
                 placeholderTextColor="#666"
               />
@@ -245,7 +245,7 @@ export default function TouristsScreen() {
               <TextInput
                 style={styles.input}
                 value={newTourist.passportNumber}
-                onChangeText={(text) => setNewTourist({...newTourist, passportNumber: text})}
+                onChangeText={(text) => setNewTourist({ ...newTourist, passportNumber: text })}
                 placeholder="Enter passport number"
                 placeholderTextColor="#666"
               />
@@ -256,7 +256,7 @@ export default function TouristsScreen() {
               <TextInput
                 style={styles.input}
                 value={newTourist.nationality}
-                onChangeText={(text) => setNewTourist({...newTourist, nationality: text})}
+                onChangeText={(text) => setNewTourist({ ...newTourist, nationality: text })}
                 placeholder="Enter nationality"
                 placeholderTextColor="#666"
               />
@@ -267,7 +267,7 @@ export default function TouristsScreen() {
               <TextInput
                 style={styles.input}
                 value={newTourist.phoneNumber}
-                onChangeText={(text) => setNewTourist({...newTourist, phoneNumber: text})}
+                onChangeText={(text) => setNewTourist({ ...newTourist, phoneNumber: text })}
                 placeholder="Enter phone number"
                 placeholderTextColor="#666"
                 keyboardType="phone-pad"
@@ -276,13 +276,13 @@ export default function TouristsScreen() {
           </ScrollView>
 
           <View style={styles.modalActions}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowRegistrationModal(false)}
             >
               <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.submitButton, { backgroundColor: colors.tint }]}
               onPress={handleRegisterTourist}
             >

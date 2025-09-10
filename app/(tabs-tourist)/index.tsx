@@ -14,14 +14,10 @@ export default function TouristHomeScreen() {
   const { user, logout } = useAuth();
   const [pulseAnim] = useState(new Animated.Value(1));
 
-  // State to manage the geofence zone status
   const [geofenceStatus, setGeofenceStatus] = useState<'safe' | 'risk'>('safe');
 
-  // This function now sets the state and triggers the pop-up
   const handleSimulateGeofenceBreach = () => {
-    setGeofenceStatus('risk'); // Update the UI to show the risk zone block
-
-    // Show the demand response pop-up after a short delay
+    setGeofenceStatus('risk');
     setTimeout(() => {
       Alert.alert(
         "Safety Check",
@@ -34,7 +30,7 @@ export default function TouristHomeScreen() {
           },
           {
             text: "I Need Help",
-            onPress: handleRequestAssistance, // Use the dedicated function
+            onPress: handleRequestAssistance,
             style: "destructive"
           }
         ]
@@ -42,13 +38,11 @@ export default function TouristHomeScreen() {
     }, 500);
   };
 
-  // Function to reset the simulation
   const handleExitRiskZone = () => {
     setGeofenceStatus('safe');
     Alert.alert('Simulation Reset', 'You have left the high-risk zone.');
   };
 
-  // Function to handle the SOS escalation
   const handleRequestAssistance = () => {
     Alert.alert(
       'SOS Activated',
@@ -57,7 +51,6 @@ export default function TouristHomeScreen() {
     );
   };
 
-  // Mock tourist data
   const touristData = {
     uid: 'UID-001',
     name: user?.name || 'Tourist',
@@ -157,12 +150,8 @@ export default function TouristHomeScreen() {
             <IconSymbol name="checkmark.shield.fill" size={24} color="#4CAF50" />
             <ThemedText type="subtitle" style={styles.geofenceTitle}>Safe Zone Monitoring</ThemedText>
           </View>
-          <ThemedText style={styles.geofenceStatus}>
-            You are currently in a Safe Zone.
-          </ThemedText>
-          <ThemedText style={styles.geofenceDescription}>
-            We'll notify you if you enter a flagged area.
-          </ThemedText>
+          <ThemedText style={styles.geofenceStatus}>You are currently in a Safe Zone.</ThemedText>
+          <ThemedText style={styles.geofenceDescription}>We'll notify you if you enter a flagged area.</ThemedText>
         </ThemedView>
       ) : (
         <ThemedView style={[styles.geofenceContainer, styles.riskZoneContainer]}>
@@ -170,12 +159,16 @@ export default function TouristHomeScreen() {
             <IconSymbol name="exclamationmark.triangle.fill" size={24} color="#d32f2f" />
             <ThemedText type="subtitle" style={[styles.geofenceTitle, styles.riskZoneTitle]}>High-Risk Zone Alert</ThemedText>
           </View>
-          <ThemedText style={[styles.geofenceStatus, styles.riskZoneText]}>
-            You have entered an area with a safety advisory.
-          </ThemedText>
-          <TouchableOpacity style={styles.assistanceButton} onPress={handleRequestAssistance}>
-            <ThemedText style={styles.assistanceButtonText}>Request Assistance</ThemedText>
-          </TouchableOpacity>
+          <ThemedText style={[styles.geofenceStatus, styles.riskZoneText]}>You have entered an area with a safety advisory.</ThemedText>
+          <View style={styles.riskZoneActions}>
+            <TouchableOpacity style={styles.assistanceButton} onPress={handleRequestAssistance}>
+              <ThemedText style={styles.assistanceButtonText}>Request Assistance</ThemedText>
+            </TouchableOpacity>
+            {/* --- NEW: Reset button inside the risk card --- */}
+            <TouchableOpacity style={styles.markSafeButton} onPress={handleExitRiskZone}>
+              <ThemedText style={styles.markSafeButtonText}>Exit Zone & Mark Safe</ThemedText>
+            </TouchableOpacity>
+          </View>
         </ThemedView>
       )}
 
@@ -190,12 +183,19 @@ export default function TouristHomeScreen() {
         </View>
       </ThemedView>
 
+      {/* --- NEW: Separate Simulation Trigger Section --- */}
+      <ThemedView style={styles.simulationContainer}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>Prototype Simulation</ThemedText>
+        <TouchableOpacity style={styles.simulationButton} onPress={handleSimulateGeofenceBreach}>
+          <IconSymbol name="exclamationmark.triangle.fill" size={20} color="white" />
+          <ThemedText style={styles.simulationButtonText}>Simulate High-Risk Zone Entrance</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+
       {/* Recent Activities */}
       <ThemedView style={styles.activitiesContainer}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Recent Activities</ThemedText>
-        <View style={styles.activitiesList}>
-          {recentActivities.map((activity) => <ActivityItem key={activity.id} activity={activity} />)}
-        </View>
+        <View style={styles.activitiesList}>{recentActivities.map((activity) => <ActivityItem key={activity.id} activity={activity} />)}</View>
       </ThemedView>
 
       {/* Safety Tips */}
@@ -211,7 +211,7 @@ export default function TouristHomeScreen() {
         </View>
       </ThemedView>
 
-      {/* Quick Actions */}
+      {/* Quick Actions (Simulation button removed from here) */}
       <ThemedView style={styles.actionsContainer}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Quick Actions</ThemedText>
         <View style={styles.actionsGrid}>
@@ -231,18 +231,6 @@ export default function TouristHomeScreen() {
             <IconSymbol name="person.circle.fill" size={24} color="white" />
             <ThemedText style={styles.actionText}>Profile</ThemedText>
           </TouchableOpacity>
-
-          {geofenceStatus === 'safe' ? (
-            <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#dc3545', marginTop: 12, minWidth: '100%' }]} onPress={handleSimulateGeofenceBreach}>
-              <IconSymbol name="exclamationmark.triangle.fill" size={24} color="white" />
-              <ThemedText style={styles.actionText}>High-Risk Zone Entrance</ThemedText>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#28a745', marginTop: 12, minWidth: '100%' }]} onPress={handleExitRiskZone}>
-              <IconSymbol name="checkmark.shield.fill" size={24} color="white" />
-              <ThemedText style={styles.actionText}>Simulate Exit Risk Zone</ThemedText>
-            </TouchableOpacity>
-          )}
         </View>
       </ThemedView>
     </ScrollView>
@@ -338,7 +326,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 16,
     padding: 16,
-    backgroundColor: '#e8f5e9', // Light green background
+    backgroundColor: '#e8f5e9',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#a5d6a7',
@@ -514,8 +502,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-
-  // --- NEW STYLES for Risk Zone UI ---
   riskZoneContainer: {
     backgroundColor: '#ffebee',
     borderColor: '#ef9a9a',
@@ -526,14 +512,57 @@ const styles = StyleSheet.create({
   riskZoneText: {
     color: '#d32f2f',
   },
-  assistanceButton: {
+  riskZoneActions: {
     marginTop: 12,
+    gap: 8,
+  },
+  assistanceButton: {
     backgroundColor: '#d32f2f',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
   assistanceButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  markSafeButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#c62828',
+  },
+  markSafeButtonText: {
+    color: '#c62828',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // --- NEW STYLES for the separate simulation section ---
+  simulationContainer: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  simulationButton: {
+    backgroundColor: '#dc3545',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  simulationButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',

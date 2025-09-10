@@ -45,7 +45,7 @@ export default function TouristProfileScreen() {
     nationality: 'USA',
     passportNumber: 'A1234567',
     phoneNumber: '+1-555-0123',
-    emergencyContact: 'John Smith',
+    emergencyContact: 'Chut Marika',
     emergencyContactPhone: '+1-555-0124',
     emergencyContactRelation: 'Father',
     bloodType: 'O+',
@@ -68,12 +68,12 @@ export default function TouristProfileScreen() {
 
   const handleSaveEdit = () => {
     if (!editingField) return;
-    
+
     setProfile(prev => ({
       ...prev,
       [editingField]: editValue
     }));
-    
+
     setShowEditModal(false);
     setEditingField(null);
     setEditValue('');
@@ -86,8 +86,8 @@ export default function TouristProfileScreen() {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
+        {
+          text: 'Logout',
           style: 'destructive',
           onPress: async () => {
             await logout();
@@ -98,17 +98,17 @@ export default function TouristProfileScreen() {
     );
   };
 
-  const ProfileField = ({ 
-    label, 
-    value, 
-    field, 
-    icon, 
-    editable = true 
-  }: { 
-    label: string; 
-    value: string; 
-    field: string; 
-    icon: string; 
+  const ProfileField = ({
+    label,
+    value,
+    field,
+    icon,
+    editable = true
+  }: {
+    label: string;
+    value: string;
+    field: string;
+    icon: string;
     editable?: boolean;
   }) => (
     <ThemedView style={styles.profileField}>
@@ -118,7 +118,7 @@ export default function TouristProfileScreen() {
           <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
         </View>
         {editable && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => handleEditField(field, value)}
           >
@@ -133,25 +133,25 @@ export default function TouristProfileScreen() {
   const CheckInHistoryItem = ({ item }: { item: any }) => (
     <ThemedView style={styles.historyItem}>
       <View style={styles.historyIcon}>
-        <IconSymbol 
-          name={item.status === 'Checked In' ? 'checkmark.circle.fill' : 
-                item.status === 'Checked Out' ? 'xmark.circle.fill' : 'location.fill'} 
-          size={16} 
-          color={item.status === 'Checked In' ? '#4CAF50' : 
-                 item.status === 'Checked Out' ? '#ff4444' : colors.tint} 
+        <IconSymbol
+          name={item.status === 'Checked In' ? 'checkmark.circle.fill' :
+            item.status === 'Checked Out' ? 'xmark.circle.fill' : 'location.fill'}
+          size={16}
+          color={item.status === 'Checked In' ? '#4CAF50' :
+            item.status === 'Checked Out' ? '#ff4444' : colors.tint}
         />
       </View>
       <View style={styles.historyContent}>
         <ThemedText style={styles.historyLocation}>{item.location}</ThemedText>
         <ThemedText style={styles.historyTimestamp}>{item.timestamp}</ThemedText>
       </View>
-      <View style={[styles.statusBadge, { 
-        backgroundColor: item.status === 'Checked In' ? '#e8f5e8' : 
-                        item.status === 'Checked Out' ? '#ffebee' : '#e3f2fd' 
+      <View style={[styles.statusBadge, {
+        backgroundColor: item.status === 'Checked In' ? '#e8f5e8' :
+          item.status === 'Checked Out' ? '#ffebee' : '#e3f2fd'
       }]}>
-        <ThemedText style={[styles.statusText, { 
-          color: item.status === 'Checked In' ? '#4CAF50' : 
-                 item.status === 'Checked Out' ? '#ff4444' : colors.tint 
+        <ThemedText style={[styles.statusText, {
+          color: item.status === 'Checked In' ? '#4CAF50' :
+            item.status === 'Checked Out' ? '#ff4444' : colors.tint
         }]}>
           {item.status}
         </ThemedText>
@@ -278,13 +278,13 @@ export default function TouristProfileScreen() {
           </View>
 
           <View style={styles.modalActions}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowEditModal(false)}
             >
               <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.saveButton, { backgroundColor: colors.tint }]}
               onPress={handleSaveEdit}
             >
