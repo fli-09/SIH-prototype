@@ -44,7 +44,7 @@ export default function SOSScreen() {
 
     const riskZoneTimeout = setTimeout(() => {
       const newAlert: SOSAlert = {
-        id: 'GEO-001', touristId: 'UID-001', touristName: 'John Smith', location: 'High-Risk Zone Alpha',
+        id: 'GEO-001', touristId: 'UID-001', touristName: 'Yash', location: 'High-Risk Zone Alpha',
         timestamp: new Date().toLocaleTimeString(), status: 'Awaiting Response', priority: 'Medium',
         description: 'Tourist entered a high-risk geofenced zone. Awaiting safety confirmation.',
         coordinates: { latitude: 28.6, longitude: 77.2 }

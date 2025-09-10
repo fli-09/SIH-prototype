@@ -45,7 +45,7 @@ export default function TouristProfileScreen() {
     nationality: 'USA',
     passportNumber: 'A1234567',
     phoneNumber: '+1-555-0123',
-    emergencyContact: 'Chut Marika',
+    emergencyContact: 'Yash',
     emergencyContactPhone: '+1-555-0124',
     emergencyContactRelation: 'Father',
     bloodType: 'O+',
