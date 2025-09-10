@@ -14,6 +14,49 @@ export default function TouristHomeScreen() {
   const { user, logout } = useAuth();
   const [pulseAnim] = useState(new Animated.Value(1));
 
+  // State to manage the geofence zone status
+  const [geofenceStatus, setGeofenceStatus] = useState<'safe' | 'risk'>('safe');
+
+  // This function now sets the state and triggers the pop-up
+  const handleSimulateGeofenceBreach = () => {
+    setGeofenceStatus('risk'); // Update the UI to show the risk zone block
+
+    // Show the demand response pop-up after a short delay
+    setTimeout(() => {
+      Alert.alert(
+        "Safety Check",
+        "You have entered a high-risk area. Please confirm you are safe.",
+        [
+          {
+            text: "I Am Safe",
+            onPress: () => Alert.alert('Safety Confirmed', 'Thank you. Authorities have been notified.'),
+            style: "default"
+          },
+          {
+            text: "I Need Help",
+            onPress: handleRequestAssistance, // Use the dedicated function
+            style: "destructive"
+          }
+        ]
+      );
+    }, 500);
+  };
+
+  // Function to reset the simulation
+  const handleExitRiskZone = () => {
+    setGeofenceStatus('safe');
+    Alert.alert('Simulation Reset', 'You have left the high-risk zone.');
+  };
+
+  // Function to handle the SOS escalation
+  const handleRequestAssistance = () => {
+    Alert.alert(
+      'SOS Activated',
+      'Your request for help has been sent to local authorities. Navigating to the SOS screen now.',
+      [{ text: 'OK', onPress: () => router.push('/(tabs-tourist)/sos') }]
+    );
+  };
+
   // Mock tourist data
   const touristData = {
     uid: 'UID-001',
@@ -43,59 +86,21 @@ export default function TouristHomeScreen() {
   ];
 
   useEffect(() => {
-    // Pulse animation for SOS button
     const pulseAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
+        Animated.timing(pulseAnim, { toValue: 1.1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
       ])
     );
     pulseAnimation.start();
-
     return () => pulseAnimation.stop();
   }, []);
 
-  const handleSOS = () => {
-    Alert.alert(
-      'Emergency SOS',
-      'Are you in immediate danger? This will alert local authorities.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Send SOS', 
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('SOS Sent', 'Emergency alert has been sent to local authorities. Help is on the way.');
-          }
-        }
-      ]
-    );
-  };
-
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          }
-        }
-      ]
-    );
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: async () => { await logout(); router.replace('/login'); } }
+    ]);
   };
 
   const StatCard = ({ title, value, icon, color }: { title: string; value: string; icon: string; color: string }) => (
@@ -110,9 +115,7 @@ export default function TouristHomeScreen() {
 
   const ActivityItem = ({ activity }: { activity: any }) => (
     <ThemedView style={styles.activityItem}>
-      <View style={styles.activityIcon}>
-        <IconSymbol name={activity.icon} size={16} color={colors.tint} />
-      </View>
+      <View style={styles.activityIcon}><IconSymbol name={activity.icon} size={16} color={colors.tint} /></View>
       <View style={styles.activityContent}>
         <ThemedText style={styles.activityText}>{activity.action}</ThemedText>
         <ThemedText style={styles.activityTime}>{activity.time}</ThemedText>
@@ -130,12 +133,8 @@ export default function TouristHomeScreen() {
             <ThemedText style={styles.headerSubtitle}>Your safety is our priority</ThemedText>
           </View>
           <View style={styles.headerRight}>
-            <View style={styles.uidBadge}>
-              <ThemedText style={styles.uidText}>{touristData.uid}</ThemedText>
-            </View>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <IconSymbol name="power" size={20} color="#ff4444" />
-            </TouchableOpacity>
+            <View style={styles.uidBadge}><ThemedText style={styles.uidText}>{touristData.uid}</ThemedText></View>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}><IconSymbol name="power" size={20} color="#ff4444" /></TouchableOpacity>
           </View>
         </View>
       </ThemedView>
@@ -143,16 +142,42 @@ export default function TouristHomeScreen() {
       {/* Emergency SOS Button */}
       <ThemedView style={styles.sosContainer}>
         <Animated.View style={[styles.sosButton, { transform: [{ scale: pulseAnim }] }]}>
-          <TouchableOpacity 
-            style={styles.sosButtonInner} 
-            onPress={() => router.push('/(tabs-tourist)/sos')}
-          >
+          <TouchableOpacity style={styles.sosButtonInner} onPress={() => router.push('/(tabs-tourist)/sos')}>
             <IconSymbol name="exclamationmark.triangle.fill" size={32} color="white" />
             <ThemedText style={styles.sosButtonText}>EMERGENCY SOS</ThemedText>
           </TouchableOpacity>
         </Animated.View>
         <ThemedText style={styles.sosSubtext}>Tap in case of emergency</ThemedText>
       </ThemedView>
+
+      {/* DYNAMIC GEOFENCE UI */}
+      {geofenceStatus === 'safe' ? (
+        <ThemedView style={styles.geofenceContainer}>
+          <View style={styles.geofenceHeader}>
+            <IconSymbol name="checkmark.shield.fill" size={24} color="#4CAF50" />
+            <ThemedText type="subtitle" style={styles.geofenceTitle}>Safe Zone Monitoring</ThemedText>
+          </View>
+          <ThemedText style={styles.geofenceStatus}>
+            You are currently in a Safe Zone.
+          </ThemedText>
+          <ThemedText style={styles.geofenceDescription}>
+            We'll notify you if you enter a flagged area.
+          </ThemedText>
+        </ThemedView>
+      ) : (
+        <ThemedView style={[styles.geofenceContainer, styles.riskZoneContainer]}>
+          <View style={styles.geofenceHeader}>
+            <IconSymbol name="exclamationmark.triangle.fill" size={24} color="#d32f2f" />
+            <ThemedText type="subtitle" style={[styles.geofenceTitle, styles.riskZoneTitle]}>High-Risk Zone Alert</ThemedText>
+          </View>
+          <ThemedText style={[styles.geofenceStatus, styles.riskZoneText]}>
+            You have entered an area with a safety advisory.
+          </ThemedText>
+          <TouchableOpacity style={styles.assistanceButton} onPress={handleRequestAssistance}>
+            <ThemedText style={styles.assistanceButtonText}>Request Assistance</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      )}
 
       {/* Tourist Stats */}
       <ThemedView style={styles.statsContainer}>
@@ -169,9 +194,7 @@ export default function TouristHomeScreen() {
       <ThemedView style={styles.activitiesContainer}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Recent Activities</ThemedText>
         <View style={styles.activitiesList}>
-          {recentActivities.map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} />
-          ))}
+          {recentActivities.map((activity) => <ActivityItem key={activity.id} activity={activity} />)}
         </View>
       </ThemedView>
 
@@ -192,34 +215,34 @@ export default function TouristHomeScreen() {
       <ThemedView style={styles.actionsContainer}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Quick Actions</ThemedText>
         <View style={styles.actionsGrid}>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
-            onPress={() => router.push('/(tabs-tourist)/checkin')}
-          >
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#4CAF50' }]} onPress={() => router.push('/(tabs-tourist)/checkin')}>
             <IconSymbol name="location.fill" size={24} color="white" />
             <ThemedText style={styles.actionText}>Check In</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#2196F3' }]}
-            onPress={() => Alert.alert('Support', 'Calling tourist support...')}
-          >
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#2196F3' }]} onPress={() => Alert.alert('Support', 'Calling tourist support...')}>
             <IconSymbol name="phone.fill" size={24} color="white" />
             <ThemedText style={styles.actionText}>Call Support</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#FF9800' }]}
-            onPress={() => Alert.alert('Map View', 'Map functionality would be implemented here')}
-          >
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#FF9800' }]} onPress={() => Alert.alert('Map View', 'Map functionality would be implemented here')}>
             <IconSymbol name="map.fill" size={24} color="white" />
             <ThemedText style={styles.actionText}>View Map</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: colors.tint }]}
-            onPress={() => router.push('/(tabs-tourist)/profile')}
-          >
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.tint }]} onPress={() => router.push('/(tabs-tourist)/profile')}>
             <IconSymbol name="person.circle.fill" size={24} color="white" />
             <ThemedText style={styles.actionText}>Profile</ThemedText>
           </TouchableOpacity>
+
+          {geofenceStatus === 'safe' ? (
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#dc3545', marginTop: 12, minWidth: '100%' }]} onPress={handleSimulateGeofenceBreach}>
+              <IconSymbol name="exclamationmark.triangle.fill" size={24} color="white" />
+              <ThemedText style={styles.actionText}>High-Risk Zone Entrance</ThemedText>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#28a745', marginTop: 12, minWidth: '100%' }]} onPress={handleExitRiskZone}>
+              <IconSymbol name="checkmark.shield.fill" size={24} color="white" />
+              <ThemedText style={styles.actionText}>Simulate Exit Risk Zone</ThemedText>
+            </TouchableOpacity>
+          )}
         </View>
       </ThemedView>
     </ScrollView>
@@ -277,7 +300,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
-    margin: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -309,6 +333,41 @@ const styles = StyleSheet.create({
   sosSubtext: {
     fontSize: 14,
     color: '#666',
+  },
+  geofenceContainer: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#e8f5e9', // Light green background
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#a5d6a7',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  geofenceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  geofenceTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2e7d32',
+  },
+  geofenceStatus: {
+    fontSize: 16,
+    color: '#388e3c',
+    marginBottom: 4,
+  },
+  geofenceDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
   statsContainer: {
     margin: 16,
@@ -454,5 +513,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 8,
     textAlign: 'center',
+  },
+
+  // --- NEW STYLES for Risk Zone UI ---
+  riskZoneContainer: {
+    backgroundColor: '#ffebee',
+    borderColor: '#ef9a9a',
+  },
+  riskZoneTitle: {
+    color: '#c62828',
+  },
+  riskZoneText: {
+    color: '#d32f2f',
+  },
+  assistanceButton: {
+    marginTop: 12,
+    backgroundColor: '#d32f2f',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  assistanceButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

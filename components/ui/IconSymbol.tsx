@@ -18,6 +18,19 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  // Added mappings for tourist home screen
+  'power': 'power-settings-new',
+  'exclamationmark.triangle.fill': 'warning',
+  'shield.fill': 'shield',
+  'building.2.fill': 'business',
+  'location.fill': 'location-on',
+  'checkmark.circle.fill': 'check-circle',
+  'airplane': 'airplanemode-active',
+  'checkmark.shield.fill': 'verified-user',
+  'phone.fill': 'phone',
+  'lightbulb.fill': 'lightbulb',
+  'map.fill': 'map',
+  'person.circle.fill': 'account-circle',
 } as IconMapping;
 
 /**

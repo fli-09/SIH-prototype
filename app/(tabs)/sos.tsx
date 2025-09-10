@@ -14,7 +14,7 @@ interface SOSAlert {
   touristName: string;
   location: string;
   timestamp: string;
-  status: 'Active' | 'Responded' | 'Resolved';
+  status: 'Active' | 'Responded' | 'Resolved' | 'Awaiting Response' | 'Responded Safely' | 'ACTION REQUIRED';
   priority: 'High' | 'Medium' | 'Low';
   description: string;
   coordinates: {
@@ -31,67 +31,54 @@ export default function SOSScreen() {
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [pulseAnim] = useState(new Animated.Value(1));
 
-  // Mock data for demonstration
-  const mockAlerts: SOSAlert[] = [
-    {
-      id: 'SOS-001',
-      touristId: 'UID-003',
-      touristName: 'Ahmed Hassan',
-      location: 'Red Fort, Delhi',
-      timestamp: '2024-01-15 16:45:00',
-      status: 'Active',
-      priority: 'High',
-      description: 'Tourist reported feeling unwell and lost in the monument area. Requesting immediate assistance.',
-      coordinates: { latitude: 28.6562, longitude: 77.2410 }
-    },
-    {
-      id: 'SOS-002',
-      touristId: 'UID-007',
-      touristName: 'Sarah Johnson',
-      location: 'Taj Mahal, Agra',
-      timestamp: '2024-01-15 14:20:00',
-      status: 'Responded',
-      priority: 'Medium',
-      description: 'Lost passport and wallet. Security team dispatched to assist.',
-      coordinates: { latitude: 27.1751, longitude: 78.0421 }
-    },
-    {
-      id: 'SOS-003',
-      touristId: 'UID-012',
-      touristName: 'Chen Wei',
-      location: 'Gateway of India, Mumbai',
-      timestamp: '2024-01-15 12:30:00',
-      status: 'Resolved',
-      priority: 'Low',
-      description: 'Minor injury from fall. Medical assistance provided and tourist is safe.',
-      coordinates: { latitude: 18.9220, longitude: 72.8347 }
-    }
-  ];
-
   useEffect(() => {
-    setAlerts(mockAlerts);
-    
-    // Simulate pulsing animation for active alerts
+    const initialAlerts: SOSAlert[] = [
+      {
+        id: 'SOS-001', touristId: 'UID-003', touristName: 'Ahmed Hassan', location: 'Red Fort, Delhi',
+        timestamp: '2024-01-15 16:45:00', status: 'Active', priority: 'High',
+        description: 'Tourist reported feeling unwell and lost.',
+        coordinates: { latitude: 28.6562, longitude: 77.2410 }
+      },
+    ];
+    setAlerts(initialAlerts);
+
+    const riskZoneTimeout = setTimeout(() => {
+      const newAlert: SOSAlert = {
+        id: 'GEO-001', touristId: 'UID-001', touristName: 'John Smith', location: 'High-Risk Zone Alpha',
+        timestamp: new Date().toLocaleTimeString(), status: 'Awaiting Response', priority: 'Medium',
+        description: 'Tourist entered a high-risk geofenced zone. Awaiting safety confirmation.',
+        coordinates: { latitude: 28.6, longitude: 77.2 }
+      };
+      setAlerts(prev => [newAlert, ...prev]);
+      Alert.alert('Dashboard Update', 'A tourist has entered a risk zone. Awaiting their response.');
+    }, 1000);
+
+    // --- UPDATED: Simulate "I Need Help" instead of "No Response" ---
+    const helpNeededTimeout = setTimeout(() => {
+      setAlerts(prev => prev.map(a =>
+        a.id === 'GEO-001'
+          ? { ...a, status: 'Active', priority: 'High', description: 'Tourist entered a high-risk zone and has requested IMMEDIATE HELP.' }
+          : a
+      ));
+      Alert.alert('!! SOS ESCALATION !!', 'Tourist John Smith (UID-001) has requested immediate help from the high-risk zone.');
+    }, 8000); // 8 seconds after the initial alert
+
     const pulseAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
+        Animated.timing(pulseAnim, { toValue: 1.2, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
       ])
     );
     pulseAnimation.start();
 
-    return () => pulseAnimation.stop();
+    return () => {
+      clearTimeout(riskZoneTimeout);
+      clearTimeout(helpNeededTimeout); // Updated timeout clear
+      pulseAnimation.stop();
+    };
   }, []);
 
-  const filteredAlerts = alerts.filter(alert => 
+  const filteredAlerts = alerts.filter(alert =>
     filterStatus === 'All' || alert.status === filterStatus
   );
 
@@ -104,75 +91,38 @@ export default function SOSScreen() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: SOSAlert['status']) => {
     switch (status) {
-      case 'Active': return '#ff4444';
-      case 'Responded': return '#FF9800';
-      case 'Resolved': return '#4CAF50';
-      default: return '#666';
+      case 'Active':
+      case 'ACTION REQUIRED':
+        return '#ff4444'; // Red
+      case 'Responded':
+      case 'Awaiting Response':
+        return '#FF9800'; // Yellow/Orange
+      case 'Resolved':
+      case 'Responded Safely':
+        return '#4CAF50'; // Green
+      default:
+        return '#666';
     }
   };
 
-  const handleRespondToAlert = (alertId: string) => {
-    Alert.alert(
-      'Respond to Alert',
-      'Are you sure you want to mark this alert as responded?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Respond', 
-          onPress: () => {
-            setAlerts(prev => prev.map(alert => 
-              alert.id === alertId 
-                ? { ...alert, status: 'Responded' as const }
-                : alert
-            ));
-          }
-        }
-      ]
-    );
-  };
-
   const handleResolveAlert = (alertId: string) => {
-    Alert.alert(
-      'Resolve Alert',
-      'Are you sure you want to mark this alert as resolved?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Resolve', 
-          onPress: () => {
-            setAlerts(prev => prev.map(alert => 
-              alert.id === alertId 
-                ? { ...alert, status: 'Resolved' as const }
-                : alert
-            ));
-          }
-        }
-      ]
-    );
+    Alert.alert('Resolve Alert', 'Are you sure you want to mark this alert as resolved?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Resolve', onPress: () => setAlerts(prev => prev.map(alert => alert.id === alertId ? { ...alert, status: 'Resolved' as const } : alert)) }
+    ]);
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          }
-        }
-      ]
-    );
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: async () => { await logout(); router.replace('/login'); } }
+    ]);
   };
 
   const AlertCard = ({ alert }: { alert: SOSAlert }) => (
-    <ThemedView style={[styles.alertCard, alert.status === 'Active' && styles.activeAlertCard]}>
+    <ThemedView style={[styles.alertCard, (alert.status === 'Active' || alert.status === 'ACTION REQUIRED') && styles.activeAlertCard]}>
       <View style={styles.alertHeader}>
         <View style={styles.alertIdContainer}>
           <ThemedText style={styles.alertId}>{alert.id}</ThemedText>
@@ -188,33 +138,20 @@ export default function SOSScreen() {
       <View style={styles.alertContent}>
         <ThemedText style={styles.touristName}>{alert.touristName}</ThemedText>
         <ThemedText style={styles.touristId}>Tourist ID: {alert.touristId}</ThemedText>
-        <ThemedText style={styles.location}>
-          <IconSymbol name="location.fill" size={14} color="#666" /> {alert.location}
-        </ThemedText>
-        <ThemedText style={styles.timestamp}>
-          <IconSymbol name="clock.fill" size={14} color="#666" /> {alert.timestamp}
-        </ThemedText>
+        <ThemedText style={styles.location}><IconSymbol name="location.fill" size={14} color="#666" /> {alert.location}</ThemedText>
+        <ThemedText style={styles.timestamp}><IconSymbol name="clock.fill" size={14} color="#666" /> {alert.timestamp}</ThemedText>
         <ThemedText style={styles.description}>{alert.description}</ThemedText>
       </View>
 
-      {alert.status === 'Active' && (
+      {(alert.status === 'Active' || alert.status === 'ACTION REQUIRED') && (
         <Animated.View style={[styles.pulseIndicator, { transform: [{ scale: pulseAnim }] }]}>
           <View style={styles.pulseDot} />
         </Animated.View>
       )}
 
       <View style={styles.alertActions}>
-        {alert.status === 'Active' && (
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#FF9800' }]}
-            onPress={() => handleRespondToAlert(alert.id)}
-          >
-            <IconSymbol name="checkmark.circle" size={16} color="white" />
-            <ThemedText style={styles.actionButtonText}>Respond</ThemedText>
-          </TouchableOpacity>
-        )}
-        {alert.status === 'Responded' && (
-          <TouchableOpacity 
+        {(alert.status === 'ACTION REQUIRED' || alert.status === 'Active') && (
+          <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
             onPress={() => handleResolveAlert(alert.id)}
           >
@@ -224,13 +161,13 @@ export default function SOSScreen() {
         )}
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.tint }]}>
           <IconSymbol name="map.fill" size={16} color="white" />
-          <ThemedText style={styles.actionButtonText}>View Map</ThemedText>
+          <ThemedText style={styles.actionButtonText}>View Details</ThemedText>
         </TouchableOpacity>
       </View>
     </ThemedView>
   );
 
-  const activeAlertsCount = alerts.filter(alert => alert.status === 'Active').length;
+  const activeAlertsCount = alerts.filter(alert => ['Active', 'ACTION REQUIRED', 'Awaiting Response'].includes(alert.status)).length;
 
   return (
     <View style={styles.container}>
@@ -256,19 +193,19 @@ export default function SOSScreen() {
       <ThemedView style={styles.statsContainer}>
         <View style={styles.statItem}>
           <ThemedText style={[styles.statNumber, { color: '#ff4444' }]}>
-            {alerts.filter(a => a.status === 'Active').length}
+            {alerts.filter(a => a.status === 'Active' || a.status === 'ACTION REQUIRED').length}
           </ThemedText>
-          <ThemedText style={styles.statLabel}>Active Alerts</ThemedText>
+          <ThemedText style={styles.statLabel}>High Priority</ThemedText>
         </View>
         <View style={styles.statItem}>
           <ThemedText style={[styles.statNumber, { color: '#FF9800' }]}>
-            {alerts.filter(a => a.status === 'Responded').length}
+            {alerts.filter(a => a.status === 'Responded' || a.status === 'Awaiting Response').length}
           </ThemedText>
-          <ThemedText style={styles.statLabel}>Responded</ThemedText>
+          <ThemedText style={styles.statLabel}>In Progress</ThemedText>
         </View>
         <View style={styles.statItem}>
           <ThemedText style={[styles.statNumber, { color: '#4CAF50' }]}>
-            {alerts.filter(a => a.status === 'Resolved').length}
+            {alerts.filter(a => a.status === 'Resolved' || a.status === 'Responded Safely').length}
           </ThemedText>
           <ThemedText style={styles.statLabel}>Resolved</ThemedText>
         </View>
@@ -277,7 +214,7 @@ export default function SOSScreen() {
       {/* Filter */}
       <ThemedView style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {['All', 'Active', 'Responded', 'Resolved'].map((status) => (
+          {['All', 'Awaiting Response', 'ACTION REQUIRED', 'Responded Safely', 'Active', 'Resolved'].map((status) => (
             <TouchableOpacity
               key={status}
               style={[
@@ -303,9 +240,6 @@ export default function SOSScreen() {
           <ThemedView style={styles.emptyState}>
             <IconSymbol name="checkmark.shield" size={48} color="#ccc" />
             <ThemedText style={styles.emptyStateText}>No alerts found</ThemedText>
-            <ThemedText style={styles.emptyStateSubtext}>
-              {filterStatus === 'All' ? 'No SOS alerts at the moment' : `No ${filterStatus.toLowerCase()} alerts`}
-            </ThemedText>
           </ThemedView>
         ) : (
           filteredAlerts.map((alert) => (
@@ -328,6 +262,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   headerContent: {
     flexDirection: 'row',
@@ -353,6 +292,11 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 16,
     color: '#666',
+  },
+  logoutButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#ffebee',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -383,6 +327,9 @@ const styles = StyleSheet.create({
   filterContainer: {
     paddingHorizontal: 16,
     paddingBottom: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   filterButton: {
     paddingHorizontal: 16,

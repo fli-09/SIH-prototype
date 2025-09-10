@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Define the structure for the User object
 interface User {
   id: string;
   email: string;
@@ -13,6 +14,7 @@ interface User {
   passportNumber?: string;
 }
 
+// Define the shape of the context value
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -22,8 +24,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
+// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Custom hook to easily access the auth context in other components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -36,10 +40,12 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// The provider component that wraps the app and manages auth state
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // On app start, try to load the user from storage
   useEffect(() => {
     loadStoredUser();
   }, []);
@@ -53,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading stored user:', error);
     } finally {
+      // Done loading, hide any splash screens or loaders
       setIsLoading(false);
     }
   };
@@ -60,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
+
       // Mock authentication - replace with real API call
       const mockUsers = [
         {
@@ -83,25 +90,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ];
 
       const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-      
+
       if (foundUser) {
-        const userData: User = {
-          id: foundUser.id,
-          email: foundUser.email,
-          name: foundUser.name,
-          role: foundUser.role,
-          authorityName: foundUser.authorityName,
-          authorityType: foundUser.authorityType,
-          uid: foundUser.uid,
-          nationality: foundUser.nationality,
-          passportNumber: foundUser.passportNumber
-        };
-        
+        // Omitting password before creating the final user data object
+        const { password, ...userDataWithoutPassword } = foundUser;
+        const userData: User = userDataWithoutPassword;
+
         setUser(userData);
         await AsyncStorage.setItem('user', JSON.stringify(userData));
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Login error:', error);
@@ -112,26 +111,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const signup = async (
-    name: string, 
-    email: string, 
-    password: string, 
+    name: string,
+    email: string,
+    password: string,
     role: string,
     authorityName?: string,
     authorityType?: string
   ): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
+
       // Mock signup - replace with real API call
       const newUser: User = {
         id: Date.now().toString(),
         email,
         name,
-        role: role as 'admin' | 'authority' | 'viewer',
+        role: role as User['role'], // Cast to the specific role types
         authorityName,
         authorityType
       };
-      
+
       setUser(newUser);
       await AsyncStorage.setItem('user', JSON.stringify(newUser));
       return true;
@@ -143,22 +142,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // This is your logout function. It works perfectly.
   const logout = async (): Promise<void> => {
     try {
+      // 1. Clear the user from the application's state
       setUser(null);
+      // 2. Remove the user data from the phone's persistent storage
       await AsyncStorage.removeItem('user');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
+  // The value provided to all children components
   const value: AuthContextType = {
     user,
     isLoading,
     login,
     signup,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!user // `!!user` converts the user object to a boolean (true if user exists, false if null)
   };
 
   return (

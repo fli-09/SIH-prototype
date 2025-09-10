@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React from 'react'; // Removed useEffect, Alert
 import { Platform } from 'react-native';
+// Removed useAuth import as it's no longer needed here
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -11,6 +12,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 export default function TouristTabLayout() {
   const colorScheme = useColorScheme();
 
+  // The entire useEffect for the simulation has been removed from this file.
+
   return (
     <Tabs
       screenOptions={{
@@ -20,7 +23,6 @@ export default function TouristTabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},

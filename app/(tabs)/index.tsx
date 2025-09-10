@@ -41,13 +41,13 @@ export default function DashboardScreen() {
   const EventItem = ({ event }: { event: any }) => (
     <ThemedView style={styles.eventItem}>
       <View style={styles.eventIcon}>
-        <IconSymbol 
-          name={event.type === 'sos' ? 'exclamationmark.triangle.fill' : 
-                event.type === 'registration' ? 'person.badge.plus' :
-                event.type === 'checkin' ? 'building.2.fill' :
-                event.type === 'safety' ? 'checkmark.shield.fill' : 'gear.fill'} 
-          size={16} 
-          color={event.type === 'sos' ? '#ff4444' : colors.tint} 
+        <IconSymbol
+          name={event.type === 'sos' ? 'exclamationmark.triangle.fill' :
+            event.type === 'registration' ? 'person.badge.plus' :
+              event.type === 'checkin' ? 'building.2.fill' :
+                event.type === 'safety' ? 'checkmark.shield.fill' : 'gear.fill'}
+          size={16}
+          color={event.type === 'sos' ? '#ff4444' : colors.tint}
         />
       </View>
       <View style={styles.eventContent}>
@@ -63,8 +63,8 @@ export default function DashboardScreen() {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
+        {
+          text: 'Logout',
           style: 'destructive',
           onPress: async () => {
             await logout();
@@ -94,9 +94,9 @@ export default function DashboardScreen() {
           <View style={styles.userDetails}>
             <ThemedText style={styles.userName}>{user?.name}</ThemedText>
             <ThemedText style={styles.userRole}>
-              {user?.role === 'admin' ? 'Administrator' : 
-               user?.role === 'authority' ? `${user?.authorityType} Authority` : 
-               'Viewer'}
+              {user?.role === 'admin' ? 'Administrator' :
+                user?.role === 'authority' ? `${user?.authorityType} Authority` :
+                  'Viewer'}
             </ThemedText>
             {user?.authorityName && (
               <ThemedText style={styles.userAuthority}>{user.authorityName}</ThemedText>
@@ -120,7 +120,7 @@ export default function DashboardScreen() {
       <ThemedView style={styles.eventsContainer}>
         <View style={styles.eventsHeader}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Live Event Feed</ThemedText>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.refreshButton}
             onPress={() => Alert.alert('Refresh', 'Event feed refreshed!')}
           >
@@ -138,28 +138,28 @@ export default function DashboardScreen() {
       <ThemedView style={styles.actionsContainer}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Quick Actions</ThemedText>
         <View style={styles.actionsGrid}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: colors.tint }]}
             onPress={() => router.push('/(tabs)/tourists')}
           >
             <IconSymbol name="person.badge.plus" size={24} color="white" />
             <ThemedText style={styles.actionText}>Manage Tourists</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: '#ff4444' }]}
             onPress={() => router.push('/(tabs)/sos')}
           >
             <IconSymbol name="exclamationmark.triangle" size={24} color="white" />
             <ThemedText style={styles.actionText}>SOS Alerts</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
             onPress={() => Alert.alert('Map View', 'Map functionality would be implemented here')}
           >
             <IconSymbol name="map.fill" size={24} color="white" />
             <ThemedText style={styles.actionText}>View Map</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: '#FF9800' }]}
             onPress={() => router.push('/(tabs)/admin')}
           >
